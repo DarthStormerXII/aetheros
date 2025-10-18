@@ -1,29 +1,111 @@
 import axios, { AxiosInstance } from "axios";
 
-export interface SwapQuoteParams {
-  tokenIn: string;
-  tokenOut: string;
-  amount: string;
-  slippageTolerance?: number;
+export interface TokenInfo {
+  id: string;
+  icon: string;
+  symbol: string;
+  decimals: number;
+  price: string;
+  priceUsd: number;
+  dueDiligenceComplete: boolean;
+  isFeeOnTransferToken: boolean;
 }
 
-export interface PoolInfo {
-  id: string;
-  token0: string;
-  token1: string;
-  fee?: string;
-  liquidity?: string;
-  sqrtPriceX96?: string;
-  tick?: number;
+export interface PlatformStats {
+  circulatingSauce: string;
+  swapTotal: number;
+  tvl: string;
+  tvlUsd: number;
+  volumeTotal: string;
+  volumeTotalUsd: number;
+}
+
+export interface SingleSidedStakingStats {
+  avg5day: number;
+  ratio: number;
+  sauce: string;
+  timestampSeconds: number;
+  xsauce: string;
 }
 
 export interface FarmInfo {
-  id: string;
-  poolId: string;
-  rewardToken: string;
-  active: boolean;
+  id: number;
+  poolId: number;
+  sauceEmissions: number;
+  hbarEmissions: number;
   totalStaked: string;
-  rewardRate: string;
+}
+
+export interface HbarPricePoint {
+  timestamp: number;
+  price: number;
+}
+
+export interface PlatformDataPoint {
+  timestamp: number;
+  value: number;
+}
+
+export interface FarmAccountTotal {
+  farmId: number;
+  poolId: number;
+  stakedAmount: string;
+}
+
+export interface PoolToken {
+  id: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  priceUsd: number;
+}
+
+export interface PoolInfo {
+  poolId: number;
+  contractId: string;
+  lpToken: PoolToken & {
+    price: string;
+  };
+  lpTokenReserve: string;
+  tokenA: PoolToken & {
+    price: string;
+  };
+  tokenAReserve: string;
+  tokenB: PoolToken & {
+    price: string;
+  };
+  tokenBReserve: string;
+}
+
+export interface DefaultTokenInfo {
+  id: string;
+  symbol: string;
+  priceUsd: number;
+  liquidityUsd: number;
+  priceChangeHour: number;
+  priceChangeDay: number;
+  priceChangeWeek: number;
+}
+
+export interface V2PoolInfo {
+  poolId: number;
+  contractId: string;
+  tokenA: PoolToken & {
+    price: string;
+    isFeeOnTransferToken: boolean;
+    dueDiligenceComplete: boolean;
+  };
+  tokenAAmount: string;
+  tokenB: PoolToken & {
+    price: string;
+    isFeeOnTransferToken: boolean;
+    dueDiligenceComplete: boolean;
+  };
+  tokenBAmount: string;
+  fee: number;
+  sqrtRatioX96: string;
+  tick: number;
+  liquidity: string;
 }
 
 export class SaucerSwapClient {
@@ -40,61 +122,90 @@ export class SaucerSwapClient {
         "x-api-key": apiKey,
         "Content-Type": "application/json",
       },
+      timeout: 10000, // 10 second timeout
     });
   }
 
-  async getTokens() {
+  async getTokens(): Promise<TokenInfo[]> {
     const response = await this.api.get("/tokens");
     return response.data;
   }
 
-  async getV2SwapQuote(params: SwapQuoteParams) {
-    const response = await this.api.get("/v2/swap/quote", {
+  async getStats(): Promise<PlatformStats> {
+    const response = await this.api.get("/stats");
+    return response.data;
+  }
+
+  async getSingleSidedStakingStats(): Promise<SingleSidedStakingStats> {
+    const response = await this.api.get("/stats/sss");
+    return response.data;
+  }
+
+  async getHbarHistoricalPrices(fromSeconds: number, toSeconds: number): Promise<HbarPricePoint[]> {
+    const response = await this.api.get("/stats/hbarHistoricalPrices", {
       params: {
-        tokenIn: params.tokenIn,
-        tokenOut: params.tokenOut,
-        amount: params.amount,
-        slippageTolerance: params.slippageTolerance || 0.005,
-      },
+        from: fromSeconds,
+        to: toSeconds
+      }
     });
     return response.data;
   }
 
-  async getV1SwapQuote(params: SwapQuoteParams) {
-    const response = await this.api.get("/v1/swap/quote", {
+  async getPlatformData(
+    fromSeconds: number,
+    toSeconds: number,
+    interval: 'HOUR' | 'DAY' | 'WEEK' = 'HOUR',
+    field: 'LIQUIDITY' | 'VOLUME' = 'LIQUIDITY'
+  ): Promise<PlatformDataPoint[]> {
+    const response = await this.api.get("/stats/platformData", {
       params: {
-        tokenIn: params.tokenIn,
-        tokenOut: params.tokenOut,
-        amount: params.amount,
-        slippageTolerance: params.slippageTolerance || 0.005,
-      },
+        from: fromSeconds,
+        to: toSeconds,
+        interval,
+        field
+      }
     });
     return response.data;
   }
 
-  async getV2Pools(token0?: string, token1?: string) {
-    const params: any = {};
-    if (token0) params.token0 = token0;
-    if (token1) params.token1 = token1;
-    
-    const response = await this.api.get("/v2/pools", { params });
+  async getFarms(): Promise<FarmInfo[]> {
+    const response = await this.api.get("/farms");
     return response.data;
   }
 
-  async getV1Pools(token0?: string, token1?: string) {
-    const params: any = {};
-    if (token0) params.token0 = token0;
-    if (token1) params.token1 = token1;
-    
-    const response = await this.api.get("/v1/pools", { params });
+  async getFarmsByAccount(accountId: string): Promise<FarmAccountTotal[]> {
+    const response = await this.api.get(`/farms/totals/${accountId}`);
     return response.data;
   }
 
-  async getFarms(active?: boolean) {
-    const params: any = {};
-    if (active !== undefined) params.active = active;
-    
-    const response = await this.api.get("/farms", { params });
+  async getPools(): Promise<PoolInfo[]> {
+    const response = await this.api.get("/pools");
     return response.data;
+  }
+
+  async getDefaultTokens(): Promise<DefaultTokenInfo[]> {
+    const response = await this.api.get("/tokens/default");
+    return response.data;
+  }
+
+  async getV2Pools(): Promise<V2PoolInfo[]> {
+    const response = await this.api.get("/pools-v2/pools");
+    return response.data;
+  }
+
+  // Helper methods for common queries
+  async getTokenBySymbol(symbol: string): Promise<TokenInfo | undefined> {
+    const tokens = await this.getTokens();
+    return tokens.find(token => token.symbol.toLowerCase() === symbol.toLowerCase());
+  }
+
+  async getActiveFarms(): Promise<FarmInfo[]> {
+    const farms = await this.getFarms();
+    return farms.filter(farm => farm.sauceEmissions > 0 || farm.hbarEmissions > 0);
+  }
+
+  async getTvlUsd(): Promise<number> {
+    const stats = await this.getStats();
+    return stats.tvlUsd;
   }
 }

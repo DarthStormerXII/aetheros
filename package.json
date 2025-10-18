@@ -1,14 +1,20 @@
 {
-  "name": "hedera-defi-mcp",
-  "version": "1.0.0",
+  "name": "kawa-fi-mcp",
+  "version": "1.0.2",
   "description": "MCP server for comprehensive Hedera DeFi operations",
   "main": "dist/index.js",
   "type": "module",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "watch": "tsx watch src/index.ts"
+    "watch": "tsx watch src/index.ts",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "mcp",
@@ -18,10 +24,28 @@
     "bonzo",
     "stader",
     "heliswap",
-    "hashport"
+    "hashport",
+    "model-context-protocol",
+    "ai-assistant",
+    "blockchain",
+    "dex",
+    "lending",
+    "staking",
+    "bridge"
   ],
   "author": "Gabriel Antony Xavier",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabrielantonyxaviour/aya.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gabrielantonyxaviour/aya/issues"
+  },
+  "homepage": "https://github.com/gabrielantonyxaviour/aya#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@hashgraph/sdk": "^2.45.0",
     "@modelcontextprotocol/sdk": "^0.5.0",

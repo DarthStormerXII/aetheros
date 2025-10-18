@@ -30,22 +30,35 @@ const server = new Server(
 );
 
 // Define Zod schemas for each tool
-const saucerswapGetQuoteSchema = z.object({
-  tokenIn: z.string().describe("Address of token to swap from"),
-  tokenOut: z.string().describe("Address of token to swap to"),
-  amount: z.string().describe("Amount to swap (in smallest unit)"),
-  slippageTolerance: z.number().optional().describe("Slippage tolerance (e.g., 0.005 for 0.5%)"),
+const saucerswapGetTokensSchema = z.object({}).strict();
+
+const saucerswapGetStatsSchema = z.object({}).strict();
+
+const saucerswapGetSssStatsSchema = z.object({}).strict();
+
+const saucerswapGetHbarPricesSchema = z.object({
+  fromSeconds: z.number().describe("Start timestamp in Unix seconds"),
+  toSeconds: z.number().describe("End timestamp in Unix seconds"),
 }).strict();
 
-const saucerswapGetPoolsSchema = z.object({
-  version: z.enum(["v1", "v2"]).describe("Pool version"),
-  token0: z.string().optional().describe("Filter by token0 address"),
-  token1: z.string().optional().describe("Filter by token1 address"),
+const saucerswapGetPlatformDataSchema = z.object({
+  fromSeconds: z.number().describe("Start timestamp in Unix seconds"),
+  toSeconds: z.number().describe("End timestamp in Unix seconds"),
+  interval: z.enum(["HOUR", "DAY", "WEEK"]).default("HOUR").describe("Data interval"),
+  field: z.enum(["LIQUIDITY", "VOLUME"]).default("LIQUIDITY").describe("Data type to retrieve"),
 }).strict();
 
-const saucerswapGetFarmsSchema = z.object({
-  active: z.boolean().optional().describe("Filter for active farms only"),
+const saucerswapGetFarmsSchema = z.object({}).strict();
+
+const saucerswapGetFarmsByAccountSchema = z.object({
+  accountId: z.string().describe("Hedera account ID (e.g., 0.0.123456)"),
 }).strict();
+
+const saucerswapGetPoolsSchema = z.object({}).strict();
+
+const saucerswapGetDefaultTokensSchema = z.object({}).strict();
+
+const saucerswapGetV2PoolsSchema = z.object({}).strict();
 
 const bonzoGetReservesSchema = z.object({}).strict();
 
@@ -75,30 +88,108 @@ const hashportGetSupportedAssetsSchema = z.object({
   targetNetwork: z.string().optional().describe("Target network ID"),
 }).strict();
 
-const hashportGetBridgeQuoteSchema = z.object({
+const hashportGetBridgeStepsSchema = z.object({
   sourceNetworkId: z.string().describe("Source network ID"),
   targetNetworkId: z.string().describe("Target network ID"),
   sourceAssetId: z.string().describe("Asset ID on source network"),
-  amount: z.string().describe("Amount to bridge"),
   recipient: z.string().describe("Recipient address on target network"),
+  amount: z.string().optional().describe("Amount to bridge"),
+  tokenId: z.string().optional().describe("Token ID for NFTs"),
 }).strict();
 
-const TOOLS: Tool[] = [
+const hashportValidateBridgeSchema = z.object({
+  sourceNetworkId: z.string().describe("Source network ID"),
+  targetNetworkId: z.string().describe("Target network ID"),
+  sourceAssetId: z.string().describe("Asset ID on source network"),
+  recipient: z.string().describe("Recipient address on target network"),
+  amount: z.string().optional().describe("Amount to bridge"),
+  tokenId: z.string().optional().describe("Token ID for NFTs"),
+}).strict();
+
+const hashportGetTransfersSchema = z.object({
+  page: z.number().min(1).describe("Page number (starts from 1)"),
+  pageSize: z.number().min(1).max(50).describe("Page size (max 50)"),
+  filter: z.object({
+    originator: z.string().optional().describe("Originator address/account ID"),
+    timestamp: z.string().optional().describe("Timestamp in RFC3339Nano format"),
+    tokenId: z.string().optional().describe("Token ID or token address"),
+    transactionId: z.string().optional().describe("Transaction ID or transaction hash"),
+  }).optional().describe("Optional filters"),
+}).strict();
+
+const hashportGetNetworkAssetsSchema = z.object({
+  networkId: z.string().describe("Network ID"),
+}).strict();
+
+const hashportGetNetworkAssetAmountsSchema = z.object({
+  networkId: z.string().describe("Network ID"),
+  assetId: z.string().describe("Asset ID"),
+}).strict();
+
+const hashportGetNetworkAssetDetailsSchema = z.object({
+  networkId: z.string().describe("Network ID"),
+  assetId: z.string().describe("Asset ID"),
+}).strict();
+
+const hashportConvertHederaTxIdSchema = z.object({
+  txId: z.string().describe("Hedera transaction ID to convert"),
+}).strict();
+
+// Define tools by platform
+const SAUCERSWAP_TOOLS: Tool[] = [
   {
-    name: "saucerswap_get_quote",
-    description: "Get a swap quote from SaucerSwap V2",
-    inputSchema: zodToJsonSchema(saucerswapGetQuoteSchema) as any,
+    name: "saucerswap_get_tokens",
+    description: "Get all tokens available on SaucerSwap with prices and metadata",
+    inputSchema: zodToJsonSchema(saucerswapGetTokensSchema) as any,
   },
   {
-    name: "saucerswap_get_pools",
-    description: "Get liquidity pool information from SaucerSwap",
-    inputSchema: zodToJsonSchema(saucerswapGetPoolsSchema) as any,
+    name: "saucerswap_get_stats",
+    description: "Get SaucerSwap platform statistics including TVL, volume, and SAUCE circulation",
+    inputSchema: zodToJsonSchema(saucerswapGetStatsSchema) as any,
+  },
+  {
+    name: "saucerswap_get_sss_stats",
+    description: "Get Single-Sided Staking (SSS) statistics and XSAUCE ratio",
+    inputSchema: zodToJsonSchema(saucerswapGetSssStatsSchema) as any,
+  },
+  {
+    name: "saucerswap_get_hbar_prices",
+    description: "Get historical HBAR price data (minutely resolution)",
+    inputSchema: zodToJsonSchema(saucerswapGetHbarPricesSchema) as any,
+  },
+  {
+    name: "saucerswap_get_platform_data",
+    description: "Get historical platform liquidity or volume data with time intervals",
+    inputSchema: zodToJsonSchema(saucerswapGetPlatformDataSchema) as any,
   },
   {
     name: "saucerswap_get_farms",
-    description: "Get yield farming opportunities from SaucerSwap",
+    description: "Get list of active yield farming opportunities",
     inputSchema: zodToJsonSchema(saucerswapGetFarmsSchema) as any,
   },
+  {
+    name: "saucerswap_get_farms_by_account",
+    description: "Get LP token amounts in farms by account ID",
+    inputSchema: zodToJsonSchema(saucerswapGetFarmsByAccountSchema) as any,
+  },
+  {
+    name: "saucerswap_get_pools",
+    description: "Get all liquidity pools with reserves and token information",
+    inputSchema: zodToJsonSchema(saucerswapGetPoolsSchema) as any,
+  },
+  {
+    name: "saucerswap_get_default_tokens",
+    description: "Get default listed tokens with hourly, daily, and weekly price changes",
+    inputSchema: zodToJsonSchema(saucerswapGetDefaultTokensSchema) as any,
+  },
+  {
+    name: "saucerswap_get_v2_pools",
+    description: "Get SaucerSwap V2 pools with advanced metrics including fees, ticks, and liquidity",
+    inputSchema: zodToJsonSchema(saucerswapGetV2PoolsSchema) as any,
+  },
+];
+
+const BONZO_TOOLS: Tool[] = [
   {
     name: "bonzo_get_reserves",
     description: "Get all lending/borrowing reserves from Bonzo Finance",
@@ -114,6 +205,9 @@ const TOOLS: Tool[] = [
     description: "Get accounts with outstanding debt eligible for liquidation",
     inputSchema: zodToJsonSchema(bonzoGetLiquidationsSchema) as any,
   },
+];
+
+const getStaderTools = (): Tool[] => [
   {
     name: "stader_get_exchange_rate",
     description: "Get current HBAR to HBARX exchange rate",
@@ -133,28 +227,113 @@ const TOOLS: Tool[] = [
       : "Prepare HBARX unstaking transaction (returns unsigned transaction)",
     inputSchema: zodToJsonSchema(staderUnstakeHbarxSchema) as any,
   },
+];
+
+const HELISWAP_TOOLS: Tool[] = [
   {
     name: "heliswap_get_pair_info",
     description: "Get trading pair information from HeliSwap",
     inputSchema: zodToJsonSchema(heliswapGetPairInfoSchema) as any,
   },
+];
+
+const HASHPORT_TOOLS: Tool[] = [
   {
     name: "hashport_get_supported_assets",
     description: "Get list of assets supported by Hashport bridge",
     inputSchema: zodToJsonSchema(hashportGetSupportedAssetsSchema) as any,
   },
   {
-    name: "hashport_get_bridge_quote",
-    description: "Get a quote for bridging assets via Hashport",
-    inputSchema: zodToJsonSchema(hashportGetBridgeQuoteSchema) as any,
+    name: "hashport_get_supported_networks",
+    description: "Get all networks supported by Hashport",
+    inputSchema: zodToJsonSchema(z.object({})) as any,
+  },
+  {
+    name: "hashport_get_bridge_steps",
+    description: "Get step-by-step instructions for bridging assets via Hashport",
+    inputSchema: zodToJsonSchema(hashportGetBridgeStepsSchema) as any,
+  },
+  {
+    name: "hashport_validate_bridge",
+    description: "Validate bridge parameters before initiating a bridge",
+    inputSchema: zodToJsonSchema(hashportValidateBridgeSchema) as any,
+  },
+  {
+    name: "hashport_get_assets_amounts",
+    description: "Get reserve amounts for all assets on Hashport",
+    inputSchema: zodToJsonSchema(z.object({})) as any,
+  },
+  {
+    name: "hashport_get_transfers",
+    description: "Get paginated list of transfers with optional filtering",
+    inputSchema: zodToJsonSchema(hashportGetTransfersSchema) as any,
+  },
+  {
+    name: "hashport_get_network_assets",
+    description: "Get assets available on a specific network",
+    inputSchema: zodToJsonSchema(hashportGetNetworkAssetsSchema) as any,
+  },
+  {
+    name: "hashport_get_network_asset_amounts",
+    description: "Get amounts for a specific asset on a network",
+    inputSchema: zodToJsonSchema(hashportGetNetworkAssetAmountsSchema) as any,
+  },
+  {
+    name: "hashport_get_network_asset_details",
+    description: "Get detailed information for a specific asset on a network",
+    inputSchema: zodToJsonSchema(hashportGetNetworkAssetDetailsSchema) as any,
+  },
+  {
+    name: "hashport_convert_hedera_tx_id",
+    description: "Convert Hedera transaction ID format",
+    inputSchema: zodToJsonSchema(hashportConvertHederaTxIdSchema) as any,
   },
 ];
 
+// Function to get available tools based on initialized clients
+const getAvailableTools = (): Tool[] => {
+  const tools: Tool[] = [];
+  
+  // SaucerSwap tools - only if client is initialized
+  if (saucerSwapClient) {
+    tools.push(...SAUCERSWAP_TOOLS);
+  }
+  
+  // Bonzo tools - always available
+  if (bonzoClient) {
+    tools.push(...BONZO_TOOLS);
+  }
+  
+  // Stader tools - only if client is initialized
+  if (staderClient) {
+    tools.push(...getStaderTools());
+  }
+  
+  // HeliSwap tools - only if client is initialized
+  if (heliSwapClient) {
+    tools.push(...HELISWAP_TOOLS);
+  }
+  
+  // Hashport tools - always available
+  if (hashportClient) {
+    tools.push(...HASHPORT_TOOLS);
+  }
+  
+  return tools;
+};
+
 // Create a map of tool names to their Zod schemas for validation
 const toolSchemas = {
-  saucerswap_get_quote: saucerswapGetQuoteSchema,
-  saucerswap_get_pools: saucerswapGetPoolsSchema,
+  saucerswap_get_tokens: saucerswapGetTokensSchema,
+  saucerswap_get_stats: saucerswapGetStatsSchema,
+  saucerswap_get_sss_stats: saucerswapGetSssStatsSchema,
+  saucerswap_get_hbar_prices: saucerswapGetHbarPricesSchema,
+  saucerswap_get_platform_data: saucerswapGetPlatformDataSchema,
   saucerswap_get_farms: saucerswapGetFarmsSchema,
+  saucerswap_get_farms_by_account: saucerswapGetFarmsByAccountSchema,
+  saucerswap_get_pools: saucerswapGetPoolsSchema,
+  saucerswap_get_default_tokens: saucerswapGetDefaultTokensSchema,
+  saucerswap_get_v2_pools: saucerswapGetV2PoolsSchema,
   bonzo_get_reserves: bonzoGetReservesSchema,
   bonzo_get_account: bonzoGetAccountSchema,
   bonzo_get_liquidations: bonzoGetLiquidationsSchema,
@@ -163,11 +342,19 @@ const toolSchemas = {
   stader_unstake_hbarx: staderUnstakeHbarxSchema,
   heliswap_get_pair_info: heliswapGetPairInfoSchema,
   hashport_get_supported_assets: hashportGetSupportedAssetsSchema,
-  hashport_get_bridge_quote: hashportGetBridgeQuoteSchema,
+  hashport_get_supported_networks: z.object({}),
+  hashport_get_bridge_steps: hashportGetBridgeStepsSchema,
+  hashport_validate_bridge: hashportValidateBridgeSchema,
+  hashport_get_assets_amounts: z.object({}),
+  hashport_get_transfers: hashportGetTransfersSchema,
+  hashport_get_network_assets: hashportGetNetworkAssetsSchema,
+  hashport_get_network_asset_amounts: hashportGetNetworkAssetAmountsSchema,
+  hashport_get_network_asset_details: hashportGetNetworkAssetDetailsSchema,
+  hashport_convert_hedera_tx_id: hashportConvertHederaTxIdSchema,
 } as const;
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: TOOLS,
+  tools: getAvailableTools(),
 }));
 
 let saucerSwapClient: SaucerSwapClient;
@@ -200,7 +387,11 @@ const initializeClients = () => {
   
   // Check transaction execution mode
   executeTransactions = process.env.EXECUTE_TX === "true";
-  operatorAccountId = process.env.HEDERA_OPERATOR_ID || null;
+  
+  // Use network-specific Hedera credentials
+  operatorAccountId = isTestnet 
+    ? (process.env.TESTNET_HEDERA_OPERATOR_ID || null)
+    : (process.env.MAINNET_HEDERA_OPERATOR_ID || null);
   
   // Hedera-based services (Stader, HeliSwap)
   if (operatorAccountId) {
@@ -209,20 +400,33 @@ const initializeClients = () => {
       
       if (executeTransactions) {
         // Full execution mode - requires private key
-        if (!process.env.HEDERA_OPERATOR_KEY) {
-          throw new Error("EXECUTE_TX=true requires HEDERA_OPERATOR_KEY");
+        const operatorKey = isTestnet 
+          ? process.env.TESTNET_HEDERA_OPERATOR_KEY
+          : process.env.MAINNET_HEDERA_OPERATOR_KEY;
+          
+        if (!operatorKey) {
+          const keyName = isTestnet ? "TESTNET_HEDERA_OPERATOR_KEY" : "MAINNET_HEDERA_OPERATOR_KEY";
+          throw new Error(`EXECUTE_TX=true requires ${keyName}`);
         }
         
-        hederaClient.setOperator(
-          operatorAccountId,
-          process.env.HEDERA_OPERATOR_KEY
-        );
+        hederaClient.setOperator(operatorAccountId, operatorKey);
         
         console.error("⚠️  WARNING: Transaction EXECUTION enabled - private key loaded");
         console.error("⚠️  Using account:", operatorAccountId);
       } else {
-        // Prepare-only mode - no private key needed
-        console.error("📝 Transaction PREPARATION mode - will return unsigned transactions");
+        // Prepare-only mode - set minimal operator for queries (without storing private key)
+        const operatorKey = isTestnet 
+          ? process.env.TESTNET_HEDERA_OPERATOR_KEY
+          : process.env.MAINNET_HEDERA_OPERATOR_KEY;
+          
+        if (operatorKey) {
+          // If key is provided, use it for queries
+          hederaClient.setOperator(operatorAccountId, operatorKey);
+          console.error("📝 Transaction PREPARATION mode with query capability");
+        } else {
+          // Minimal setup for queries only - use a dummy key that won't be used for transactions
+          console.error("📝 Transaction PREPARATION mode - queries may be limited without operator key");
+        }
         console.error("📝 Using account:", operatorAccountId);
       }
       
@@ -276,10 +480,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const validatedArgs = schema.parse(args);
 
     switch (name) {
-      case "saucerswap_get_quote": {
+      case "saucerswap_get_tokens": {
         if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
-        const typedArgs = validatedArgs as z.infer<typeof saucerswapGetQuoteSchema>;
-        const result = await saucerSwapClient.getV2SwapQuote(typedArgs);
+        const result = await saucerSwapClient.getTokens();
         return {
           content: [
             {
@@ -289,14 +492,56 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           ],
         };
       }
-      
-      case "saucerswap_get_pools": {
+
+      case "saucerswap_get_stats": {
         if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
-        const typedArgs = validatedArgs as z.infer<typeof saucerswapGetPoolsSchema>;
-        const { version, token0, token1 } = typedArgs;
-        const result = version === "v1" 
-          ? await saucerSwapClient.getV1Pools(token0, token1)
-          : await saucerSwapClient.getV2Pools(token0, token1);
+        const result = await saucerSwapClient.getStats();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "saucerswap_get_sss_stats": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const result = await saucerSwapClient.getSingleSidedStakingStats();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "saucerswap_get_hbar_prices": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapGetHbarPricesSchema>;
+        const result = await saucerSwapClient.getHbarHistoricalPrices(typedArgs.fromSeconds, typedArgs.toSeconds);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "saucerswap_get_platform_data": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapGetPlatformDataSchema>;
+        const result = await saucerSwapClient.getPlatformData(
+          typedArgs.fromSeconds, 
+          typedArgs.toSeconds, 
+          typedArgs.interval, 
+          typedArgs.field
+        );
         return {
           content: [
             {
@@ -309,9 +554,60 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       
       case "saucerswap_get_farms": {
         if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
-        const typedArgs = validatedArgs as z.infer<typeof saucerswapGetFarmsSchema>;
-        const { active } = typedArgs;
-        const result = await saucerSwapClient.getFarms(active);
+        const result = await saucerSwapClient.getFarms();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "saucerswap_get_farms_by_account": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapGetFarmsByAccountSchema>;
+        const result = await saucerSwapClient.getFarmsByAccount(typedArgs.accountId);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "saucerswap_get_pools": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const result = await saucerSwapClient.getPools();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "saucerswap_get_default_tokens": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const result = await saucerSwapClient.getDefaultTokens();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "saucerswap_get_v2_pools": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const result = await saucerSwapClient.getV2Pools();
         return {
           content: [
             {
@@ -339,7 +635,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!bonzoClient) throw new Error("Bonzo client not initialized");
         const typedArgs = validatedArgs as z.infer<typeof bonzoGetAccountSchema>;
         const { accountId } = typedArgs;
-        const result = await bonzoClient.getAccountPosition(accountId);
+        const result = await bonzoClient.getAccountDashboard(accountId);
         return {
           content: [
             {
@@ -495,10 +791,120 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
       
-      case "hashport_get_bridge_quote": {
+      case "hashport_get_supported_networks": {
         if (!hashportClient) throw new Error("Hashport client not initialized");
-        const typedArgs = validatedArgs as z.infer<typeof hashportGetBridgeQuoteSchema>;
-        const result = await hashportClient.getBridgeQuote(typedArgs);
+        const result = await hashportClient.getSupportedNetworks();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "hashport_get_bridge_steps": {
+        if (!hashportClient) throw new Error("Hashport client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof hashportGetBridgeStepsSchema>;
+        const result = await hashportClient.getBridgeSteps(typedArgs);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "hashport_validate_bridge": {
+        if (!hashportClient) throw new Error("Hashport client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof hashportValidateBridgeSchema>;
+        const result = await hashportClient.validateBridge(typedArgs);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "hashport_get_assets_amounts": {
+        if (!hashportClient) throw new Error("Hashport client not initialized");
+        const result = await hashportClient.getAssetsAmounts();
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "hashport_get_transfers": {
+        if (!hashportClient) throw new Error("Hashport client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof hashportGetTransfersSchema>;
+        const result = await hashportClient.getTransfers(typedArgs);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "hashport_get_network_assets": {
+        if (!hashportClient) throw new Error("Hashport client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof hashportGetNetworkAssetsSchema>;
+        const result = await hashportClient.getNetworkAssets(typedArgs.networkId);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "hashport_get_network_asset_amounts": {
+        if (!hashportClient) throw new Error("Hashport client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof hashportGetNetworkAssetAmountsSchema>;
+        const result = await hashportClient.getNetworkAssetAmounts(typedArgs.networkId, typedArgs.assetId);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "hashport_get_network_asset_details": {
+        if (!hashportClient) throw new Error("Hashport client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof hashportGetNetworkAssetDetailsSchema>;
+        const result = await hashportClient.getNetworkAssetDetails(typedArgs.networkId, typedArgs.assetId);
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "hashport_convert_hedera_tx_id": {
+        if (!hashportClient) throw new Error("Hashport client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof hashportConvertHederaTxIdSchema>;
+        const result = await hashportClient.convertHederaTxId(typedArgs.txId);
         return {
           content: [
             {
