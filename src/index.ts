@@ -60,6 +60,66 @@ const saucerswapGetDefaultTokensSchema = z.object({}).strict();
 
 const saucerswapGetV2PoolsSchema = z.object({}).strict();
 
+// SaucerSwap transaction tools schemas
+const saucerswapQuoteExactInputSchema = z.object({
+  tokens: z.array(z.string()).describe("Array of token addresses for the swap path"),
+  fees: z.array(z.number()).describe("Array of pool fees (500, 1500, 3000, 10000)"),
+  amountIn: z.string().describe("Input amount in token's smallest unit"),
+}).strict();
+
+const saucerswapQuoteExactOutputSchema = z.object({
+  tokens: z.array(z.string()).describe("Array of token addresses for the swap path"),
+  fees: z.array(z.number()).describe("Array of pool fees (500, 1500, 3000, 10000)"),
+  amountOut: z.string().describe("Output amount in token's smallest unit"),
+}).strict();
+
+const saucerswapSwapHbarForTokensSchema = z.object({
+  outputToken: z.string().describe("Output token address"),
+  fee: z.number().describe("Pool fee (500, 1500, 3000, 10000)"),
+  amountIn: z.string().describe("HBAR amount in tinybar"),
+  amountOutMinimum: z.string().describe("Minimum output tokens in smallest unit"),
+  recipient: z.string().optional().describe("Recipient address (defaults to account)"),
+  deadline: z.number().optional().describe("Unix timestamp deadline"),
+}).strict();
+
+const saucerswapSwapTokensForHbarSchema = z.object({
+  inputToken: z.string().describe("Input token address"),
+  fee: z.number().describe("Pool fee (500, 1500, 3000, 10000)"),
+  amountIn: z.string().describe("Input token amount in smallest unit"),
+  amountOutMinimum: z.string().describe("Minimum HBAR output in tinybar"),
+  recipient: z.string().optional().describe("Recipient address (defaults to account)"),
+  deadline: z.number().optional().describe("Unix timestamp deadline"),
+}).strict();
+
+const saucerswapSwapTokensForTokensSchema = z.object({
+  inputToken: z.string().describe("Input token address"),
+  outputToken: z.string().describe("Output token address"),
+  fees: z.array(z.number()).describe("Array of pool fees for multi-hop swaps"),
+  amountIn: z.string().describe("Input token amount in smallest unit"),
+  amountOutMinimum: z.string().describe("Minimum output tokens in smallest unit"),
+  recipient: z.string().optional().describe("Recipient address (defaults to account)"),
+  deadline: z.number().optional().describe("Unix timestamp deadline"),
+}).strict();
+
+const saucerswapStakeSauceSchema = z.object({
+  amount: z.string().describe("SAUCE amount to stake in smallest unit"),
+}).strict();
+
+const saucerswapUnstakeXSauceSchema = z.object({
+  amount: z.string().describe("xSAUCE amount to unstake in smallest unit"),
+}).strict();
+
+const saucerswapDepositToFarmSchema = z.object({
+  poolId: z.number().describe("Farm pool ID"),
+  amount: z.string().describe("LP token amount in smallest unit"),
+  depositFeeHbar: z.string().describe("Deposit fee in tinybar"),
+}).strict();
+
+const saucerswapWithdrawFromFarmSchema = z.object({
+  poolId: z.number().describe("Farm pool ID"),
+  amount: z.string().describe("LP token amount to withdraw in smallest unit"),
+}).strict();
+
 const bonzoGetReservesSchema = z.object({}).strict();
 
 const bonzoGetAccountSchema = z.object({
@@ -186,6 +246,65 @@ const SAUCERSWAP_TOOLS: Tool[] = [
     name: "saucerswap_get_v2_pools",
     description: "Get SaucerSwap V2 pools with advanced metrics including fees, ticks, and liquidity",
     inputSchema: zodToJsonSchema(saucerswapGetV2PoolsSchema) as any,
+  },
+  {
+    name: "saucerswap_quote_exact_input",
+    description: "Get swap quote for exact input amount",
+    inputSchema: zodToJsonSchema(saucerswapQuoteExactInputSchema) as any,
+  },
+  {
+    name: "saucerswap_quote_exact_output", 
+    description: "Get swap quote for exact output amount",
+    inputSchema: zodToJsonSchema(saucerswapQuoteExactOutputSchema) as any,
+  },
+  {
+    name: "saucerswap_swap_hbar_for_tokens",
+    description: process.env.EXECUTE_TX === "true" 
+      ? "Swap exact HBAR for tokens (will execute transaction)"
+      : "Prepare HBAR to tokens swap transaction (returns unsigned transaction)",
+    inputSchema: zodToJsonSchema(saucerswapSwapHbarForTokensSchema) as any,
+  },
+  {
+    name: "saucerswap_swap_tokens_for_hbar",
+    description: process.env.EXECUTE_TX === "true"
+      ? "Swap exact tokens for HBAR (will execute transaction)" 
+      : "Prepare tokens to HBAR swap transaction (returns unsigned transaction)",
+    inputSchema: zodToJsonSchema(saucerswapSwapTokensForHbarSchema) as any,
+  },
+  {
+    name: "saucerswap_swap_tokens_for_tokens",
+    description: process.env.EXECUTE_TX === "true"
+      ? "Swap exact tokens for tokens (will execute transaction)"
+      : "Prepare tokens to tokens swap transaction (returns unsigned transaction)",
+    inputSchema: zodToJsonSchema(saucerswapSwapTokensForTokensSchema) as any,
+  },
+  {
+    name: "saucerswap_stake_sauce",
+    description: process.env.EXECUTE_TX === "true"
+      ? "Stake SAUCE for xSAUCE (will execute transaction)"
+      : "Prepare SAUCE staking transaction (returns unsigned transaction)",
+    inputSchema: zodToJsonSchema(saucerswapStakeSauceSchema) as any,
+  },
+  {
+    name: "saucerswap_unstake_xsauce", 
+    description: process.env.EXECUTE_TX === "true"
+      ? "Unstake xSAUCE for SAUCE (will execute transaction)"
+      : "Prepare xSAUCE unstaking transaction (returns unsigned transaction)",
+    inputSchema: zodToJsonSchema(saucerswapUnstakeXSauceSchema) as any,
+  },
+  {
+    name: "saucerswap_deposit_to_farm",
+    description: process.env.EXECUTE_TX === "true"
+      ? "Deposit LP tokens to farm (will execute transaction)"
+      : "Prepare farm deposit transaction (returns unsigned transaction)",
+    inputSchema: zodToJsonSchema(saucerswapDepositToFarmSchema) as any,
+  },
+  {
+    name: "saucerswap_withdraw_from_farm",
+    description: process.env.EXECUTE_TX === "true"
+      ? "Withdraw LP tokens from farm (will execute transaction)"
+      : "Prepare farm withdrawal transaction (returns unsigned transaction)", 
+    inputSchema: zodToJsonSchema(saucerswapWithdrawFromFarmSchema) as any,
   },
 ];
 
@@ -334,6 +453,15 @@ const toolSchemas = {
   saucerswap_get_pools: saucerswapGetPoolsSchema,
   saucerswap_get_default_tokens: saucerswapGetDefaultTokensSchema,
   saucerswap_get_v2_pools: saucerswapGetV2PoolsSchema,
+  saucerswap_quote_exact_input: saucerswapQuoteExactInputSchema,
+  saucerswap_quote_exact_output: saucerswapQuoteExactOutputSchema,
+  saucerswap_swap_hbar_for_tokens: saucerswapSwapHbarForTokensSchema,
+  saucerswap_swap_tokens_for_hbar: saucerswapSwapTokensForHbarSchema,
+  saucerswap_swap_tokens_for_tokens: saucerswapSwapTokensForTokensSchema,
+  saucerswap_stake_sauce: saucerswapStakeSauceSchema,
+  saucerswap_unstake_xsauce: saucerswapUnstakeXSauceSchema,
+  saucerswap_deposit_to_farm: saucerswapDepositToFarmSchema,
+  saucerswap_withdraw_from_farm: saucerswapWithdrawFromFarmSchema,
   bonzo_get_reserves: bonzoGetReservesSchema,
   bonzo_get_account: bonzoGetAccountSchema,
   bonzo_get_liquidations: bonzoGetLiquidationsSchema,
@@ -369,10 +497,10 @@ let operatorAccountId: string | null = null;
 const initializeClients = () => {
   const isTestnet = process.env.HEDERA_NETWORK === "testnet";
   
-  // SaucerSwap - only initialize if API key is provided
+  // SaucerSwap - initialize basic client first (will be updated later with Hedera client if available)
   if (process.env.SAUCERSWAP_API_KEY) {
     saucerSwapClient = new SaucerSwapClient(process.env.SAUCERSWAP_API_KEY, isTestnet);
-    console.error("SaucerSwap client initialized");
+    console.error("SaucerSwap client initialized (read-only mode)");
   } else {
     console.error("SaucerSwap disabled - SAUCERSWAP_API_KEY not provided");
   }
@@ -457,6 +585,18 @@ const initializeClients = () => {
       console.error("HeliSwap client initialized (mainnet only)");
     } else {
       console.error("HeliSwap disabled - not available on testnet");
+    }
+    
+    // Update SaucerSwap client with Hedera transaction capabilities
+    if (process.env.SAUCERSWAP_API_KEY && saucerSwapClient) {
+      saucerSwapClient = new SaucerSwapClient(
+        process.env.SAUCERSWAP_API_KEY, 
+        isTestnet,
+        hederaClient,
+        executeTransactions,
+        operatorAccountId
+      );
+      console.error("SaucerSwap client updated with transaction capabilities");
     }
     } catch (error) {
       console.error("Failed to initialize Hedera client:", error);
@@ -616,6 +756,365 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             },
           ],
         };
+      }
+
+      case "saucerswap_quote_exact_input": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapQuoteExactInputSchema>;
+        const result = await saucerSwapClient.quoteExactInput(
+          typedArgs.tokens,
+          typedArgs.fees,
+          typedArgs.amountIn
+        );
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "saucerswap_quote_exact_output": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapQuoteExactOutputSchema>;
+        const result = await saucerSwapClient.quoteExactOutput(
+          typedArgs.tokens,
+          typedArgs.fees,
+          typedArgs.amountOut
+        );
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "saucerswap_swap_hbar_for_tokens": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapSwapHbarForTokensSchema>;
+        const result = await saucerSwapClient.swapExactHbarForTokens(
+          typedArgs.outputToken,
+          typedArgs.fee,
+          typedArgs.amountIn,
+          typedArgs.amountOutMinimum,
+          typedArgs.recipient,
+          typedArgs.deadline
+        );
+        
+        if (result.type === "executed") {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  transactionId: result.transactionId,
+                  message: "HBAR swap completed successfully",
+                  note: "Transaction confirmed on Hedera network"
+                }, null, 2),
+              },
+            ],
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  type: "prepared_transaction",
+                  description: result.description,
+                  from: result.from,
+                  to: result.to,
+                  function: result.function,
+                  params: result.params,
+                  value: result.value,
+                  gas: result.gas,
+                  unsigned: result.unsigned,
+                  note: "Transaction prepared - sign and submit with your preferred method"
+                }, null, 2),
+              },
+            ],
+          };
+        }
+      }
+
+      case "saucerswap_swap_tokens_for_hbar": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapSwapTokensForHbarSchema>;
+        const result = await saucerSwapClient.swapExactTokensForHbar(
+          typedArgs.inputToken,
+          typedArgs.fee,
+          typedArgs.amountIn,
+          typedArgs.amountOutMinimum,
+          typedArgs.recipient,
+          typedArgs.deadline
+        );
+        
+        if (result.type === "executed") {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  transactionId: result.transactionId,
+                  message: "Token to HBAR swap completed successfully",
+                  note: "Transaction confirmed on Hedera network"
+                }, null, 2),
+              },
+            ],
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  type: "prepared_transaction",
+                  description: result.description,
+                  from: result.from,
+                  to: result.to,
+                  function: result.function,
+                  params: result.params,
+                  value: result.value,
+                  gas: result.gas,
+                  unsigned: result.unsigned,
+                  note: "Transaction prepared - sign and submit with your preferred method"
+                }, null, 2),
+              },
+            ],
+          };
+        }
+      }
+
+      case "saucerswap_swap_tokens_for_tokens": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapSwapTokensForTokensSchema>;
+        const result = await saucerSwapClient.swapExactTokensForTokens(
+          typedArgs.inputToken,
+          typedArgs.outputToken,
+          typedArgs.fees,
+          typedArgs.amountIn,
+          typedArgs.amountOutMinimum,
+          typedArgs.recipient,
+          typedArgs.deadline
+        );
+        
+        if (result.type === "executed") {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  transactionId: result.transactionId,
+                  message: "Token swap completed successfully",
+                  note: "Transaction confirmed on Hedera network"
+                }, null, 2),
+              },
+            ],
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  type: "prepared_transaction",
+                  description: result.description,
+                  from: result.from,
+                  to: result.to,
+                  function: result.function,
+                  params: result.params,
+                  value: result.value,
+                  gas: result.gas,
+                  unsigned: result.unsigned,
+                  note: "Transaction prepared - sign and submit with your preferred method"
+                }, null, 2),
+              },
+            ],
+          };
+        }
+      }
+
+      case "saucerswap_stake_sauce": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapStakeSauceSchema>;
+        const result = await saucerSwapClient.stakeSauceForXSauce(typedArgs.amount);
+        
+        if (result.type === "executed") {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  transactionId: result.transactionId,
+                  message: "SAUCE staking completed successfully",
+                  note: "Transaction confirmed on Hedera network"
+                }, null, 2),
+              },
+            ],
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  type: "prepared_transaction",
+                  description: result.description,
+                  from: result.from,
+                  to: result.to,
+                  function: result.function,
+                  params: result.params,
+                  value: result.value,
+                  gas: result.gas,
+                  unsigned: result.unsigned,
+                  note: "Transaction prepared - sign and submit with your preferred method"
+                }, null, 2),
+              },
+            ],
+          };
+        }
+      }
+
+      case "saucerswap_unstake_xsauce": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapUnstakeXSauceSchema>;
+        const result = await saucerSwapClient.unstakeXSauceForSauce(typedArgs.amount);
+        
+        if (result.type === "executed") {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  transactionId: result.transactionId,
+                  message: "xSAUCE unstaking completed successfully",
+                  note: "Transaction confirmed on Hedera network"
+                }, null, 2),
+              },
+            ],
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  type: "prepared_transaction",
+                  description: result.description,
+                  from: result.from,
+                  to: result.to,
+                  function: result.function,
+                  params: result.params,
+                  value: result.value,
+                  gas: result.gas,
+                  unsigned: result.unsigned,
+                  note: "Transaction prepared - sign and submit with your preferred method"
+                }, null, 2),
+              },
+            ],
+          };
+        }
+      }
+
+      case "saucerswap_deposit_to_farm": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapDepositToFarmSchema>;
+        const result = await saucerSwapClient.depositLpTokensToFarm(
+          typedArgs.poolId,
+          typedArgs.amount,
+          typedArgs.depositFeeHbar
+        );
+        
+        if (result.type === "executed") {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  transactionId: result.transactionId,
+                  message: "Farm deposit completed successfully",
+                  note: "Transaction confirmed on Hedera network"
+                }, null, 2),
+              },
+            ],
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  type: "prepared_transaction",
+                  description: result.description,
+                  from: result.from,
+                  to: result.to,
+                  function: result.function,
+                  params: result.params,
+                  value: result.value,
+                  gas: result.gas,
+                  unsigned: result.unsigned,
+                  note: "Transaction prepared - sign and submit with your preferred method"
+                }, null, 2),
+              },
+            ],
+          };
+        }
+      }
+
+      case "saucerswap_withdraw_from_farm": {
+        if (!saucerSwapClient) throw new Error("SaucerSwap client not initialized");
+        const typedArgs = validatedArgs as z.infer<typeof saucerswapWithdrawFromFarmSchema>;
+        const result = await saucerSwapClient.withdrawLpTokensFromFarm(
+          typedArgs.poolId,
+          typedArgs.amount
+        );
+        
+        if (result.type === "executed") {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: true,
+                  transactionId: result.transactionId,
+                  message: "Farm withdrawal completed successfully",
+                  note: "Transaction confirmed on Hedera network"
+                }, null, 2),
+              },
+            ],
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  type: "prepared_transaction",
+                  description: result.description,
+                  from: result.from,
+                  to: result.to,
+                  function: result.function,
+                  params: result.params,
+                  value: result.value,
+                  gas: result.gas,
+                  unsigned: result.unsigned,
+                  note: "Transaction prepared - sign and submit with your preferred method"
+                }, null, 2),
+              },
+            ],
+          };
+        }
       }
       
       case "bonzo_get_reserves": {
