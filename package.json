@@ -1,13 +1,14 @@
 {
   "name": "kawa-fi-mcp",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "MCP server for comprehensive Hedera DeFi operations",
   "main": "dist/index.js",
   "type": "module",
   "files": [
     "dist/**/*",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    ".env.example"
   ],
   "scripts": {
     "build": "tsc",

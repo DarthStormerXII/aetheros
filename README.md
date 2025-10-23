@@ -53,14 +53,15 @@ A comprehensive Model Context Protocol (MCP) server that provides unified access
 
 ### 1. Installation
 ```bash
-git clone <repository-url>
-cd aya
-npm install
-npm run build
+# Install globally from npm
+npm install -g kawa-fi-mcp
+
+# Or run with npx (no installation needed)
+npx kawa-fi-mcp --help
 ```
 
 ### 2. Environment Configuration
-Create a `.env` file with your desired configuration:
+Create a `.env` file with your desired configuration (see `.env.example` for reference):
 
 ```bash
 # Network Selection
@@ -87,8 +88,8 @@ Add to your MCP client:
 {
   "mcpServers": {
     "hedera-defi": {
-      "command": "node",
-      "args": ["/path/to/aya/dist/index.js"]
+      "command": "npx",
+      "args": ["kawa-fi-mcp"]
     }
   }
 }
@@ -96,8 +97,11 @@ Add to your MCP client:
 
 ### 4. Verification
 ```bash
-# Test the server
-npm start
+# Test the server directly
+npx kawa-fi-mcp
+
+# Or if installed globally
+kawa-fi-mcp
 
 # Check available tools (should show 13-36 tools based on configuration)
 ```
@@ -269,9 +273,15 @@ src/
 
 ### Development Commands
 ```bash
+# For local development (after git clone)
+npm install            # Install dependencies
 npm run dev            # Development with hot reload
 npm run build          # Production build
 npm run test           # Run test suite
+
+# For users (npm package)
+npm install -g kawa-fi-mcp  # Global installation
+npx kawa-fi-mcp             # Direct execution
 ```
 
 ### Technical Details
@@ -295,9 +305,9 @@ For complete technical overview, challenges, and architecture details, see **[SU
 
 ### Common Issues
 
-**Tools not appearing**: Check MCP configuration path
+**Tools not appearing**: Check MCP configuration and installation
 ```bash
-ls -la dist/index.js  # Verify build exists
+npx kawa-fi-mcp --version  # Verify package is accessible
 ```
 
 **API timeouts**: SaucerSwap has rate limits

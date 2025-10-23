@@ -1,11 +1,11 @@
 ### What it does
 
-KawaFi provides a unified interface for AI assistants (like Claude) to interact with the Hedera DeFi ecosystem. It offers 14+ tools that enable:
+KawaFi provides a unified interface for AI assistants (like Claude) to interact with the Hedera DeFi ecosystem. It offers 36 comprehensive tools that enable:
 
 - **Real-time DeFi Analytics**: Get swap quotes, pool reserves, APYs, lending rates, and liquidation opportunities
 - **Transaction Preparation**: Generate unsigned transactions for external signing (hardware wallets, dApps)
 - **Automated Execution**: Optionally sign and execute DeFi operations directly (staking, swapping, lending)
-- **Multi-Platform Support**: Access SaucerSwap DEX, Bonzo lending, Stader staking, HeliSwap DEX, and Hashport bridge through a single interface
+- **Multi-Platform Support**: Access SaucerSwap DEX (19 tools), Bonzo lending (3 tools), Stader staking (3 tools), HeliSwap DEX (1 tool), and Hashport bridge (10 tools) through a single interface
 
 The innovative dual-mode system allows users to choose between maximum security (prepare-only mode) or full automation (execute mode).
 
@@ -66,6 +66,8 @@ KawaFi solves these by providing a secure, unified interface that AI assistants 
 
 6. **Security-First Approach**: Implemented environment-based configuration with clear warnings and best practices documentation
 
+7. **NPM Distribution**: Published as `kawa-fi-mcp` package for easy installation via `npm install -g kawa-fi-mcp` with simple MCP config: `{"command": "npx", "args": ["kawa-fi-mcp"]}`
+
 ### What we learned
 
 1. **Security is Paramount**: The DeFi space demands extreme caution - our dual-mode approach proved essential for user trust
@@ -81,7 +83,7 @@ KawaFi solves these by providing a secure, unified interface that AI assistants 
 ### What's next for KawaFi
 
 **Immediate Plans:**
-- Complete transaction execution for remaining platforms (SaucerSwap swaps, Bonzo lending)
+- Complete transaction execution for remaining platforms (Bonzo lending)
 - Add multi-hop swap optimization across DEXs
 - Implement position monitoring and alerts
 
