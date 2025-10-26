@@ -1,10 +1,10 @@
 {
-  "name": "kawa-fi-mcp",
+  "name": "aetheros",
   "version": "1.0.6",
   "description": "MCP server for comprehensive Hedera DeFi operations",
   "main": "dist/index.js",
   "bin": {
-    "kawa-fi-mcp": "dist/index.js"
+    "aetheros": "dist/index.js"
   },
   "type": "module",
   "files": [
@@ -37,16 +37,16 @@
     "staking",
     "bridge"
   ],
-  "author": "Gabriel Antony Xavier",
+  "author": "DarthStormerXII",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gabrielantonyxaviour/aya.git"
+    "url": "git+https://github.com/DarthStormerXII/aetheros.git"
   },
   "bugs": {
-    "url": "https://github.com/gabrielantonyxaviour/aya/issues"
+    "url": "https://github.com/DarthStormerXII/aetheros/issues"
   },
-  "homepage": "https://github.com/gabrielantonyxaviour/aya#readme",
+  "homepage": "https://github.com/DarthStormerXII/aetheros#readme",
   "engines": {
     "node": ">=18.0.0"
   },

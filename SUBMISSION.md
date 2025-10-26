@@ -1,6 +1,6 @@
 ### What it does
 
-KawaFi provides a unified interface for AI assistants (like Claude) to interact with the Hedera DeFi ecosystem. It offers 36 comprehensive tools that enable:
+Aetheros provides a unified interface for AI assistants (like Claude) to interact with the Hedera DeFi ecosystem. It offers 36 comprehensive tools that enable:
 
 - **Real-time DeFi Analytics**: Get swap quotes, pool reserves, APYs, lending rates, and liquidation opportunities
 - **Transaction Preparation**: Generate unsigned transactions for external signing (hardware wallets, dApps)
@@ -18,7 +18,7 @@ DeFi on Hedera is fragmented across multiple platforms, each with different APIs
 3. **Security Concerns**: Many automation tools require private keys, creating unacceptable security risks
 4. **Lack of AI Integration**: No existing solution allows AI assistants to safely interact with Hedera DeFi
 
-KawaFi solves these by providing a secure, unified interface that AI assistants can use to access DeFi data and prepare transactions without ever exposing private keys.
+Aetheros solves these by providing a secure, unified interface that AI assistants can use to access DeFi data and prepare transactions without ever exposing private keys.
 
 ### Challenges I ran into
 
@@ -66,7 +66,7 @@ KawaFi solves these by providing a secure, unified interface that AI assistants 
 
 6. **Security-First Approach**: Implemented environment-based configuration with clear warnings and best practices documentation
 
-7. **NPM Distribution**: Published as `kawa-fi-mcp` package for easy installation via `npm install -g kawa-fi-mcp` with simple MCP config: `{"command": "npx", "args": ["kawa-fi-mcp"]}`
+7. **NPM Distribution**: Published as `aetheros` package for easy installation via `npm install -g aetheros` with simple MCP config: `{"command": "npx", "args": ["aetheros"]}`
 
 ### What we learned
 
@@ -80,7 +80,7 @@ KawaFi solves these by providing a secure, unified interface that AI assistants 
 
 5. **Graceful Degradation Works**: Making the server functional even without all credentials increased accessibility
 
-### What's next for KawaFi
+### What's next for Aetheros
 
 **Immediate Plans:**
 - Complete transaction execution for remaining platforms (Bonzo lending)

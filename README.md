@@ -1,6 +1,6 @@
-# KawaFi - Hedera DeFi MCP Server
+# Aetheros - Hedera DeFi MCP Server
 
-> **KawaFi** provides unified access to the Hedera DeFi ecosystem through the Model Context Protocol (MCP), enabling AI assistants to interact with multiple DeFi platforms safely and efficiently.
+> **Aetheros** provides unified access to the Hedera DeFi ecosystem through the Model Context Protocol (MCP), enabling AI assistants to interact with multiple DeFi platforms safely and efficiently.
 
 [![MCP](https://img.shields.io/badge/MCP-Compatible-blue)](https://modelcontextprotocol.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
@@ -54,10 +54,10 @@ A comprehensive Model Context Protocol (MCP) server that provides unified access
 ### 1. Installation
 ```bash
 # Install globally from npm
-npm install -g kawa-fi-mcp
+npm install -g aetheros
 
 # Or run with npx (no installation needed)
-npx kawa-fi-mcp --help
+npx aetheros --help
 ```
 
 ### 2. Environment Configuration
@@ -89,7 +89,7 @@ Add to your MCP client:
   "mcpServers": {
     "hedera-defi": {
       "command": "npx",
-      "args": ["kawa-fi-mcp"]
+      "args": ["aetheros"]
     }
   }
 }
@@ -98,10 +98,10 @@ Add to your MCP client:
 ### 4. Verification
 ```bash
 # Test the server directly
-npx kawa-fi-mcp
+npx aetheros
 
 # Or if installed globally
-kawa-fi-mcp
+aetheros
 
 # Check available tools (should show 13-36 tools based on configuration)
 ```
@@ -280,8 +280,8 @@ npm run build          # Production build
 npm run test           # Run test suite
 
 # For users (npm package)
-npm install -g kawa-fi-mcp  # Global installation
-npx kawa-fi-mcp             # Direct execution
+npm install -g aetheros  # Global installation
+npx aetheros             # Direct execution
 ```
 
 ### Technical Details
@@ -307,7 +307,7 @@ For complete technical overview, challenges, and architecture details, see **[SU
 
 **Tools not appearing**: Check MCP configuration and installation
 ```bash
-npx kawa-fi-mcp --version  # Verify package is accessible
+npx aetheros --version  # Verify package is accessible
 ```
 
 **API timeouts**: SaucerSwap has rate limits
@@ -345,7 +345,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**KawaFi** - Unifying Hedera DeFi for AI assistants 🤖⚡
+**Aetheros** - Unifying Hedera DeFi for AI assistants 🤖⚡
 
 [![Built with MCP](https://img.shields.io/badge/Built%20with-MCP-blue)](https://modelcontextprotocol.io)
 [![Hedera](https://img.shields.io/badge/Powered%20by-Hedera-purple)](https://hedera.com)

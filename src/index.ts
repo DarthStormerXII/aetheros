@@ -20,7 +20,7 @@ dotenv.config();
 
 const server = new Server(
   {
-    name: "kawa-fi-mcp",
+    name: "aetheros",
     version: "1.0.6",
   },
   {
@@ -1441,7 +1441,7 @@ async function main() {
   
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("KawaFi MCP Server running on stdio");
+  console.error("Aetheros MCP Server running on stdio");
 }
 
 main().catch(console.error);
