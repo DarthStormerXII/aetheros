@@ -20,8 +20,8 @@ dotenv.config();
 
 const server = new Server(
   {
-    name: "hedera-defi-mcp",
-    version: "1.0.0",
+    name: "kawa-fi-mcp",
+    version: "1.0.6",
   },
   {
     capabilities: {
@@ -1441,7 +1441,7 @@ async function main() {
   
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Hedera DeFi MCP Server running on stdio");
+  console.error("KawaFi MCP Server running on stdio");
 }
 
 main().catch(console.error);
