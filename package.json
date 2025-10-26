@@ -1,8 +1,11 @@
 {
   "name": "kawa-fi-mcp",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "MCP server for comprehensive Hedera DeFi operations",
   "main": "dist/index.js",
+  "bin": {
+    "kawa-fi-mcp": "dist/index.js"
+  },
   "type": "module",
   "files": [
     "dist/**/*",
